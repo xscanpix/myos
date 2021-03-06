@@ -1,3 +1,4 @@
+extern setup_idt
 extern kernel_main
 global _start
 
@@ -62,11 +63,21 @@ _start:
     or eax, 1 << 31
     or eax, 1 << 16
     mov cr0, eax
-    
+
     lgdt [gdt64.Pointer]
 
     ; jump to long mode
     jmp gdt64.Code:long_mode_start
+
+times 510-($-$$) db 0
+
+db 0x55
+db 0xaa
+
+section .stack
+align 8
+resb 16 * 1024
+stack_top:
 
 section .bss
 align 4096
@@ -76,6 +87,9 @@ p3_table:
     resb 4096
 p2_table:
     resb 4096
+
+ldt64:
+    resb 16 * 256
 
 section .rodata
 gdt64:
@@ -88,6 +102,11 @@ gdt64:
     dw .Pointer - gdt64 - 1
     dq gdt64
 
+ldt_ptr:
+.Pointer:
+    dw 16 * 256
+    dq ldt64
+
 section .text
 bits 64
 long_mode_start:
@@ -99,6 +118,17 @@ long_mode_start:
     mov gs, ax
     mov ss, ax
     
+    mov rdi, ldt_ptr.Pointer
+    call setup_idt
+
+    lidt [ldt_ptr.Pointer]
+
+    ;sti
+
+    mov rax, stack_top
+    mov rsp, rax
+    mov rbp, rax
+
     call kernel_main
 
     hlt

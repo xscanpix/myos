@@ -27,4 +27,9 @@ SECTIONS {
     {
         *(.bss)
     }
+
+    .stack :
+    {
+        *(.stack)
+    }
 }

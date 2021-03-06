@@ -1,5 +1,7 @@
 #include "VGA_terminal.h"
 
+#include <stdarg.h>
+
 static const size_t COLUMNS = 80;
 static const size_t ROWS    = 25;
 
@@ -75,7 +77,7 @@ void        VGA_newline()
     {
         for(size_t i = row * COLUMNS + column; i < (row + 1) * COLUMNS; i++)
         {
-            buffer[i] = VGA_data(' ', WHITE, BLACK);
+            buffer[i] = VGA_data(' ', DEFAULT_BG_COLOR, DEFAULT_FG_COLOR);
         }
     }
     row = (row + 1) % ROWS;
@@ -89,7 +91,80 @@ void        VGA_newline()
         }
         for(size_t i = (ROWS - 1) * COLUMNS; i < ROWS * COLUMNS; i++)
         {
-            buffer[i] = VGA_data(' ', BLACK, WHITE);
+            buffer[i] = VGA_data(' ', DEFAULT_BG_COLOR, DEFAULT_FG_COLOR);
         }
     }
+}
+
+void UlongToString(unsigned long number, char * str)
+{
+    // TODO: Should remove leading zeros?
+    static const unsigned long POWERS[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+
+    for(int c = 9; c >= 0; c--)
+    {
+        char digit = '0';
+        unsigned long power = POWERS[c];
+
+        while(number >= power)
+        {
+            number -= power;
+            digit++;
+        }
+
+        str[9-c] = digit;
+    }
+}
+
+void        VGA_printf(const char * format, ...)
+{
+    va_list argp;
+    va_start(argp, format);
+
+    while(*format != '\0')
+    {
+        if(*format == '%')
+        {
+            format++;
+
+            if(*format == '%')
+            {
+                VGA_print('%', DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+            } 
+            else if(*format == 'c') 
+            {
+                char c = va_arg(argp, int);
+                VGA_print(c, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+            }
+            else if(*format == 'd' || *format == 'i')
+            {
+                int i = va_arg(argp, int);
+
+                if(i < 0)
+                {
+                    VGA_print('-', DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+                    i = -i;
+                }
+
+                char buf[32] = {'\0'};
+
+                UlongToString(i, buf);
+
+                VGA_println(buf, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+            }
+            else
+            {
+                VGA_println("Format: ", DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+                VGA_print(*format, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+                VGA_println(" not supported.", DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+            }
+        } else 
+        {
+            VGA_print(*format, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+        }
+
+        format++;
+    }
+
+    va_end(argp);
 }

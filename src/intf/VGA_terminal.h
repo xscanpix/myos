@@ -23,9 +23,19 @@ typedef enum VGA_COLOR
     WHITE
 } VGA_COLOR;
 
+static const VGA_COLOR DEFAULT_FG_COLOR = BLACK;
+static const VGA_COLOR DEFAULT_BG_COLOR = WHITE;
+
 uint8_t     VGA_color(VGA_COLOR fg, VGA_COLOR bg);
+
 uint16_t    VGA_data(const char chr, VGA_COLOR fg, VGA_COLOR bg);
+
 void        VGA_clear(const char chr, VGA_COLOR color);
+
 void        VGA_print(const char chr, VGA_COLOR fg, VGA_COLOR bg);
+
 void        VGA_println(const char * string, VGA_COLOR fg, VGA_COLOR bg);
+
 void        VGA_newline();
+
+void        VGA_printf(const char * format, ...);
