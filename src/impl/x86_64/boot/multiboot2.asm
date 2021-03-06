@@ -1,3 +1,6 @@
+extern kernel_main
+global _start
+
 section .multiboot_header
 header_start:
     dd 0xe85250d6                ; magic number
@@ -14,7 +17,6 @@ header_start:
 header_end:
 
 section .text
-    global _start
     bits 32
 _start:
     ; Point the first entry of the level 4 page table to the first entry in the
@@ -63,17 +65,11 @@ _start:
     
     lgdt [gdt64.Pointer]
 
-    ; update selectors
-    mov ax, gdt64.Data
-    mov ss, ax
-    mov ds, ax
-    mov es, ax
-
-    ; jump to long mode!
+    ; jump to long mode
     jmp gdt64.Code:long_mode_start
 
 section .bss
-    align 4096
+align 4096
 p4_table:
     resb 4096
 p3_table:
@@ -95,8 +91,14 @@ gdt64:
 section .text
 bits 64
 long_mode_start:
-
-    extern kernel_main
+    cli
+    mov ax, gdt64.Data
+    mov es, ax
+    mov ds, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    
     call kernel_main
 
     hlt

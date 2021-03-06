@@ -13,12 +13,12 @@ uint8_t     VGA_color(VGA_COLOR fg, VGA_COLOR bg)
     return (uint8_t) fg | (uint8_t) bg << 4;
 }
 
-uint16_t    VGA_data(char chr, VGA_COLOR fg, VGA_COLOR bg)
+uint16_t    VGA_data(const char chr, VGA_COLOR fg, VGA_COLOR bg)
 {
     return (uint16_t) chr | (uint16_t) VGA_color(fg, bg) << 8;
 }
 
-void        VGA_clear(char chr, VGA_COLOR color)
+void        VGA_clear(const char chr, VGA_COLOR color)
 {
     uint16_t * buffer = VGA_MEMORY;
 
@@ -26,39 +26,70 @@ void        VGA_clear(char chr, VGA_COLOR color)
     {
         for(size_t row = 0; row < ROWS; row++)
         {
-            buffer[col + COLUMNS * row] = VGA_data(chr, BLACK, color);
+            buffer[col + COLUMNS * row] = VGA_data(chr, WHITE, color);
         }
     }
 }
 
-void        VGA_print(char chr, VGA_COLOR fg, VGA_COLOR bg)
+void        VGA_print(const char chr, VGA_COLOR fg, VGA_COLOR bg)
 {
-    if(chr == '\n')
+    switch(chr)
     {
-        VGA_newline();
+        case '\n':
+        {
+            VGA_newline();
+        } break;
+        default:
+        {
+            uint16_t * buffer = VGA_MEMORY;
+
+            buffer[row * COLUMNS + column] = VGA_data(chr, fg, bg);
+
+            column++;
+
+            if(column >= COLUMNS)
+            {
+                VGA_newline();
+            }
+        }break;
     }
-
-    uint16_t * buffer = VGA_MEMORY;
-
-    if(column < (COLUMNS - 1))
-    {
-        column++;
-    } 
-    
-    if(row >= (ROWS - 1)) 
-    {
-        row = 0;
-    }
-
-    buffer[column + COLUMNS * row] = VGA_data(chr, fg, bg);
 }
 
-void        VGA_println(char* string, VGA_COLOR fg, VGA_COLOR bg)
+void        VGA_println(const char * string, VGA_COLOR fg, VGA_COLOR bg)
 {
-    
+    size_t count = 0;
+
+    char c;
+
+    while((c = string[count++]) != '\0')
+    {
+        VGA_print(c, fg, bg);
+    }
 }
 
 void        VGA_newline()
 {
+    uint16_t * buffer = VGA_MEMORY;
+
+    if(column < COLUMNS)
+    {
+        for(size_t i = row * COLUMNS + column; i < (row + 1) * COLUMNS; i++)
+        {
+            buffer[i] = VGA_data(' ', WHITE, BLACK);
+        }
+    }
     row = (row + 1) % ROWS;
+    column = 0;
+
+    if(row == 0)
+    {
+        for(size_t i = COLUMNS; i < COLUMNS * ROWS; i++)
+        {
+            buffer[i - COLUMNS] = buffer[i];
+        }
+        for(size_t i = (ROWS - 1) * COLUMNS; i < ROWS * COLUMNS; i++)
+        {
+            buffer[i] = VGA_data(' ', BLACK, WHITE);
+        }
+    }
 }

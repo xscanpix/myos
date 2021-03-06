@@ -24,8 +24,8 @@ typedef enum VGA_COLOR
 } VGA_COLOR;
 
 uint8_t     VGA_color(VGA_COLOR fg, VGA_COLOR bg);
-uint16_t    VGA_data(char chr, VGA_COLOR fg, VGA_COLOR bg);
-void        VGA_clear(char chr, VGA_COLOR color);
-void        VGA_print(char chr, VGA_COLOR fg, VGA_COLOR bg);
-void        VGA_println(char* string, VGA_COLOR fg, VGA_COLOR bg);
+uint16_t    VGA_data(const char chr, VGA_COLOR fg, VGA_COLOR bg);
+void        VGA_clear(const char chr, VGA_COLOR color);
+void        VGA_print(const char chr, VGA_COLOR fg, VGA_COLOR bg);
+void        VGA_println(const char * string, VGA_COLOR fg, VGA_COLOR bg);
 void        VGA_newline();
