@@ -1,35 +1,16 @@
-ENTRY(_start)
+ENTRY(start)
 
 SECTIONS {
     . = 1M;
-    
+
     .boot :
     {
-        *(.multiboot_header)
+        /* ensure that the multiboot header is at the beginning */
+        KEEP(*(.multiboot_header))
     }
-    
+
     .text :
     {
-        *(.text)      
-    }
-
-    .rodata :
-    {
-        *(.rodata)
-    }
-
-    .data :
-    {
-        *(.data)
-    }
-
-    .bss :
-    {
-        *(.bss)
-    }
-
-    .stack :
-    {
-        *(.stack)
+        *(.text)
     }
 }
